@@ -1,3 +1,4 @@
+import numpy as np
 
 
 def initialize_parameters(layer_dims):
@@ -5,7 +6,10 @@ def initialize_parameters(layer_dims):
     :param layer_dims: an array of the dimensions of each layer in the network
     :return: a dictionary containing the initialized W and b parameters of each layer
     """
-    pass
+    params = {f'W{i + 1}': np.random.rand(layer_dims[i + 1], layer_dims[i]) for i in range(len(layer_dims) - 1)}
+    params.update({f'b{i + 1}': np.zeros(layer_dims[i + 1]) for i in range(len(layer_dims) - 1)})
+
+    return params
 
 
 def linear_forward(A, W, b):
@@ -17,7 +21,12 @@ def linear_forward(A, W, b):
     :return Z: the linear component of the activation function
     :return linear_cache: a dictionary containing A, W, b
     """
-    pass
+    A_c = np.expand_dims(A, axis=1)
+    b_c = np.expand_dims(b, axis=1)
+    Z = np.matmul(W, A_c) + b_c
+    linear_cache = {'A': A, 'W': W, 'b': b}
+    return Z, linear_cache
+
 
 def softmax(Z):
     """
@@ -25,7 +34,14 @@ def softmax(Z):
     :return A: the activations of the layer
     :return activation_cache: returns Z, which will be useful for the backpropagation
     """
-    pass
+    exp = np.exp(Z)
+    z_softmax = exp / np.sum(exp)
+    return z_softmax, {'Z': Z}
+
+
+def safe_softmax(Z):
+    Z_safe = Z - np.max(Z)
+    return softmax(Z_safe)[0], {'Z': Z}
 
 
 def relu(Z):
@@ -34,7 +50,9 @@ def relu(Z):
     :return A: the activations of the layer
     :return activation_cach: returns Z, which will be useful for the backpropagation
     """
-    pass
+    A = np.apply_along_axis(lambda x: x if x > 0 else 0, 0, Z)
+    return A, {'Z': Z}
+
 
 def linear_activation_forward(A_prev, W, B, activation):
     """
@@ -48,6 +66,7 @@ def linear_activation_forward(A_prev, W, B, activation):
     """
     pass
 
+
 def L_model_forward(X, parameters, use_batchnorm):
     """
     Implement forward propagation for the [LINEAR->RELU]*(L-1)->LINEAR->SOFTMAX computation
@@ -59,6 +78,7 @@ def L_model_forward(X, parameters, use_batchnorm):
     """
     pass
 
+
 def compute_cost(AL, Y):
     """
     the cost function defined by equation
@@ -67,6 +87,7 @@ def compute_cost(AL, Y):
     :return cost: the cross-entropy cost
     """
     pass
+
 
 def apply_batchnorm(A):
     """
