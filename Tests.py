@@ -37,9 +37,24 @@ class Tests(unittest.TestCase):
         self.assertTrue(expected_dim == actual_dim)
 
     def test_linear_forward_t1(self):
-        A = np.random.rand(5,)
+        A = np.random.rand(5, )
         W = np.random.rand(3, 5)
-        b = np.random.rand(3,)
+        b = np.random.rand(3, )
         expected_dim = (3, 1)
         Z_dim = forward.linear_forward(A, W, b)[0].shape
         self.assertTrue(expected_dim == Z_dim)
+
+    def test_apply_batchnorm_t1(self):
+        A = np.array([1, 2, 3, 4, 5, 6])
+        expected_return = np.array([-1.4638501094227998, -0.8783100656536799, -0.29277002188455997,  0.29277002188455997,
+                                    0.8783100656536799, 1.4638501094227998])
+        actual_return = forward.apply_batchnorm(A)
+        print(expected_return == actual_return)
+        self.assertTrue(np.array_equal(expected_return, actual_return))
+
+    def test_apply_batchnorm_t2(self):
+        A = np.array([1])
+        expected_return = np.array([0.])
+        actual_return = forward.apply_batchnorm(A)
+        print(expected_return == actual_return)
+        self.assertTrue(np.array_equal(expected_return, actual_return))
