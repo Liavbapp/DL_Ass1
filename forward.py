@@ -21,9 +21,9 @@ def linear_forward(A, W, b):
     :return Z: the linear component of the activation function
     :return linear_cache: a dictionary containing A, W, b
     """
-    A_c = np.expand_dims(A, axis=1)
-    b_c = np.expand_dims(b, axis=1)
-    Z = np.matmul(W, A_c) + b_c
+    # A_t = np.expand_dims(A, axis=1)
+    # b_t = np.expand_dims(b, axis=1)
+    Z = np.matmul(W, A) + b
     linear_cache = {'A': A, 'W': W, 'b': b}
     return Z, linear_cache
 
@@ -35,8 +35,8 @@ def softmax(Z):
     :return activation_cache: returns Z, which will be useful for the backpropagation
     """
     exp = np.exp(Z)
-    z_softmax = exp / np.sum(exp)
-    return z_softmax, {'Z': Z}
+    A = exp / np.sum(exp)
+    return A, {'Z': Z}
 
 
 def safe_softmax(Z):
@@ -50,7 +50,10 @@ def relu(Z):
     :return A: the activations of the layer
     :return activation_cach: returns Z, which will be useful for the backpropagation
     """
-    A = np.apply_along_axis(lambda x: x if x > 0 else 0, 0, Z)
+    def relu_func(zi):
+        return zi if zi > 0 else 0
+    relu_func = np.vectorize(relu_func)
+    A = relu_func(Z)
     return A, {'Z': Z}
 
 
@@ -60,11 +63,14 @@ def linear_activation_forward(A_prev, W, B, activation):
     :param A_prev: activations of the previous layer
     :param W: the weights matrix of the current layer
     :param B: the bias vector of the current layer
-    :param activation: the activation function to be used (a string, either “softmax” or “relu”)
+    :param activation: the activation function to be used (a string,     either “softmax” or “relu”)
     :return A: the activations of the current layer
     :return cache: a joint dictionary containing both linear_cache and activation_cache
     """
-    return None, None
+    Z, linear_cache = linear_forward(A_prev, W, B)
+    A_cur, activation_cache = relu(Z) if activation == 'relu' else softmax(Z)
+
+    return A_cur, {**linear_cache, **activation_cache}
 
 
 def L_model_forward(X, parameters, use_batchnorm):
@@ -100,7 +106,15 @@ def compute_cost(AL, Y):
     :param Y: the labels vector (i.e. the ground truth)
     :return cost: the cross-entropy cost
     """
-    pass
+    m = len(AL[0])
+    C = len(AL)
+    cost = 0
+    for i in range(0, m):    # TODO: check if can vectorize
+        labels_t = Y[:, i].reshape(1, C)
+        softmax_pred = AL[:, i].reshape(C, 1)
+        cost += np.matmul(labels_t, softmax_pred)
+    cost = (-1/m) * cost
+    return cost
 
 
 def apply_batchnorm(A):
@@ -109,7 +123,7 @@ def apply_batchnorm(A):
     :param A: the activation values of a given layer
     :return NA: the normalized activation values, based on the formula learned in class
     """
-    epsilon = 0.00000001  # prevent divding by zero
+    epsilon = 0.0  # prevent divding by zero
     mu = np.average(A)
     variance = np.var(A)
     A_norm = (A - mu) / np.sqrt(variance) if variance > 0 else (A - mu) / np.sqrt(variance + epsilon)
