@@ -50,10 +50,12 @@ def relu(Z):
     :return A: the activations of the layer
     :return activation_cach: returns Z, which will be useful for the backpropagation
     """
+
     def relu_func(zi):
         return zi if zi > 0 else 0
+
     relu_func = np.vectorize(relu_func)
-    A = relu_func(Z)
+    A = np.array(relu_func(Z))
     return A, {'Z': Z}
 
 
@@ -73,7 +75,7 @@ def linear_activation_forward(A_prev, W, B, activation):
     return A_cur, {**linear_cache, **activation_cache}
 
 
-def L_model_forward(X, parameters, use_batchnorm):
+def L_model_forward(X, parameters, use_batchnorm):  # Todo: add testing to check it
     """
     Implement forward propagation for the [LINEAR->RELU]*(L-1)->LINEAR->SOFTMAX computation
     :param X: the data, numpy array of shape (input size, number of examples)
@@ -109,11 +111,11 @@ def compute_cost(AL, Y):
     m = len(AL[0])
     C = len(AL)
     cost = 0
-    for i in range(0, m):    # TODO: check if can vectorize
+    for i in range(0, m):  # TODO: check if can vectorize
         labels_t = Y[:, i].reshape(1, C)
         softmax_pred = AL[:, i].reshape(C, 1)
         cost += np.matmul(labels_t, softmax_pred)
-    cost = (-1/m) * cost
+    cost = (-1 / m) * cost
     return cost
 
 
@@ -123,7 +125,7 @@ def apply_batchnorm(A):
     :param A: the activation values of a given layer
     :return NA: the normalized activation values, based on the formula learned in class
     """
-    epsilon = 0.0  # prevent divding by zero
+    epsilon = 0.000000001  # prevent divding by zero
     mu = np.average(A)
     variance = np.var(A)
     A_norm = (A - mu) / np.sqrt(variance) if variance > 0 else (A - mu) / np.sqrt(variance + epsilon)

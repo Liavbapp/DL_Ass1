@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def Linear_backward(dZ, cache):
     """
     Implements the linear part of the backward propagation process for a single layer
@@ -7,7 +10,16 @@ def Linear_backward(dZ, cache):
     :return dW: Gradient of the cost with respect to W (current layer l), same shape as W
     :return db: Gradient of the cost with respect to b (current layer l), same shape as b
     """
-    pass
+    A_prev = cache['A_prev']
+    A_prev_t = A_prev.reshape(len(A_prev), 1)
+
+    W = cache['W']
+    b = cache['b']
+    #TODO: how compute da?
+    dW = np.matmul(dZ, A_prev_t)
+    db = dZ
+
+    raise NotImplementedError
 
 
 def linear_activation_backward(dA, cache, activation):
@@ -15,14 +27,20 @@ def linear_activation_backward(dA, cache, activation):
     Implements the backward propagation for the LINEAR->ACTIVATION layer.
     The function first computes dZ and then applies the linear_backward function.
     :param dA: post activation gradient of the current layer
-    :param cache: contains both the linear cache and the activations cache
+    :param cache: contains both the linear cache and the activations cache (A,W,b,Z)
     :param activation:
     :return dA_prev: Gradient of the cost with respect to the activation (of the previous layer l-1), same shape as A_prev
     :return dW: Gradient of the cost with respect to W (current layer l), same shape as W
     :return db: Gradient of the cost with respect to b (current layer l), same shape as b
     """
-    pass
+    if activation == 'softmax':
+        dz = cache['A'] - #y ?
+    else: # activation = 'relu'
+        dz = np.transpose(cache['W'])
 
+    dA_prev, dW, db = Linear_backward(dz, cache)
+
+    return dA_prev, dW, db
 
 def relu_backward(dA, activation_cache):
     """

@@ -37,12 +37,22 @@ class Tests(unittest.TestCase):
         self.assertTrue(expected_dim == actual_dim)
 
     def test_linear_forward_t1(self):
-        A = np.random.rand(5, )
+        A_prev = np.random.rand(5, )
         W = np.random.rand(3, 5)
         b = np.random.rand(3, )
-        expected_dim = (3, 1)
-        Z_dim = forward.linear_forward(A, W, b)[0].shape
+        expected_dim = (3,)
+        Z_dim = forward.linear_forward(A_prev, W, b)[0].shape
         self.assertTrue(expected_dim == Z_dim)
+
+    def test_linear_forward_t2(self):
+        A_prev = np.array([0.91208099, 0.84926712, 0.34659675, 0.6648843, 0.00323112])
+        W = np.array([[0.23212763, 0.17373304, 0.97972341, 0.90126425, 0.97650933],
+                      [0.28495502, 0.61750353, 0.67666006, 0.46393482, 0.49559188],
+                      [0.56688255, 0.64774301, 0.01890737, 0.2893646, 0.74474502]])
+        b = np.array([4.13613966e-04, 7.75099399e-01, 6.88698967e-01])
+        expected_Z = np.array([1.30163919, 2.10401938, 1.95720217])
+        actual_Z = forward.linear_forward(A_prev, W, b)[0]
+        np.testing.assert_allclose(actual_Z, expected_Z)
 
     def test_linear_activation_forward_t1(self):
         A_prev = np.random.rand(5, )
@@ -85,21 +95,25 @@ class Tests(unittest.TestCase):
         expected_return = np.array([-1.4638501094227998, -0.8783100656536799, -0.29277002188455997, 0.29277002188455997,
                                     0.8783100656536799, 1.4638501094227998])
         actual_return = forward.apply_batchnorm(A)
-        print(expected_return == actual_return)
-        self.assertTrue(np.array_equal(expected_return, actual_return))
+        np.testing.assert_allclose(expected_return, actual_return)
 
     def test_apply_batchnorm_t2(self):
         A = np.array([1])
         expected_return = np.array([0.])
         actual_return = forward.apply_batchnorm(A)
-        print(expected_return == actual_return)
-        self.assertTrue(np.array_equal(expected_return, actual_return))
+        np.testing.assert_allclose(expected_return, actual_return)
 
-    def test_softmax(self):
-        Z = [1, 2, 4, 5]
-        expected_res = 1
-        a = forward.softmax(Z)
-        b = 1
+    def test_relu_t1(self):
+        Z = np.array([1, 2, 4, 5])
+        expected_res = np.array([1, 2, 4, 5])
+        actual_res = forward.relu(Z)[0]
+        self.assertTrue(np.array_equal(expected_res, actual_res))
+
+    def test_relu_t2(self):
+        Z = np.array([1, 2, 4, -3])
+        expected_res = np.array([1, 2, 4, 0])
+        actual_res = forward.relu(Z)[0]
+        self.assertTrue(np.array_equal(expected_res, actual_res))
 
     def test_compute_cost(self):
         AL = np.array([[0.5, 0.3, 0.5, 0.4],
