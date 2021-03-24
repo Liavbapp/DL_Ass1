@@ -15,7 +15,7 @@ def Linear_backward(dZ, cache):
 
     W = cache['W']
     b = cache['b']
-    #TODO: how compute da?
+    # TODO: how compute da?
     dW = np.matmul(dZ, A_prev_t)
     db = dZ
 
@@ -34,13 +34,14 @@ def linear_activation_backward(dA, cache, activation):
     :return db: Gradient of the cost with respect to b (current layer l), same shape as b
     """
     if activation == 'softmax':
-        dz = cache['A'] - #y ?
-    else: # activation = 'relu'
-        dz = np.transpose(cache['W'])
+        dz = softmax_backward(dA, cache)
+    else:  # activation = 'relu'
+        dz = relu_backward(dA, cache)
 
     dA_prev, dW, db = Linear_backward(dz, cache)
 
     return dA_prev, dW, db
+
 
 def relu_backward(dA, activation_cache):
     """
@@ -49,7 +50,11 @@ def relu_backward(dA, activation_cache):
     :param activation_cache: contains Z (stored during the forward propagation)
     :return dZ: gradient of the cost with respect to Z
     """
-    pass
+    d_relu = activation_cache['Z']
+    d_relu[d_relu > 0] = 1
+    d_relu[d_relu <= 0] = 0
+    dZ = np.matmul(d_relu, dA)  # ?
+    return dZ
 
 
 def softmax_backward(dA, activation_cache):
