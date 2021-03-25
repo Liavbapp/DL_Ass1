@@ -12,14 +12,13 @@ def Linear_backward(dZ, cache):
     """
     A_prev = cache['A_prev']
     A_prev_t = A_prev.reshape(len(A_prev), 1)
-
     W = cache['W']
-    b = cache['b']
-    # TODO: how compute da?
+
+    dA_prev = np.matmul(dZ, W)
     dW = np.matmul(dZ, A_prev_t)
     db = dZ
 
-    raise NotImplementedError
+    return dA_prev, dW, db
 
 
 def linear_activation_backward(dA, cache, activation):
@@ -50,10 +49,9 @@ def relu_backward(dA, activation_cache):
     :param activation_cache: contains Z (stored during the forward propagation)
     :return dZ: gradient of the cost with respect to Z
     """
-    d_relu = activation_cache['Z']
-    d_relu[d_relu > 0] = 1
-    d_relu[d_relu <= 0] = 0
-    dZ = np.matmul(d_relu, dA)  # ?
+    Z = activation_cache['Z']
+    a_derv = np.vectorize(lambda zi: 0 if zi <= 0 else 1)(Z)
+    dZ = np.matmul(dA, a_derv)
     return dZ
 
 
@@ -61,10 +59,14 @@ def softmax_backward(dA, activation_cache):
     """
     Implements backward propagation for a softmax unit
     :param dA: the post-activation gradient
-    :param activation_cache: contains Z (stored during the forward propagation)
+    :param activation_cache: contains Z (stored during the forward propagation) ->>> Gilad said on forum that it ok to assume we get here A_L (soft_max results) and True_labels
     :return dZ: gradient of the cost with respect to Z
     """
-    pass
+    a_L = activation_cache['A_L']  # our's softmax (last layer) probabilities
+    t_L = activation_cache['T_L']  # True labels
+    a_derv = a_L - t_L
+    dZ = np.matmul(dA, a_derv)
+    raise dZ
 
 
 def L_model_backward(AL, Y, caches):
@@ -79,7 +81,18 @@ def L_model_backward(AL, Y, caches):
              grads["db" + str(l)] = ...
 
     """
-    pass
+    # TODO: validate indexing
+    num_layers = len(caches)
+    grads = {}
+    caches[num_layers]['TL'] = Y  # true labels are part of the cache of last layer
+    dA_prev = None
+    for i in range(num_layers, 0):
+        activation = 'softmax' if i == num_layers else 'relu'
+        dA = dA_prev if i < num_layers else -(Y / AL) + (1 - Y) / (1 - AL)
+        dA_prev, dW, db = linear_activation_backward(AL, caches[num_layers - 1], activation)
+        grads.update({f'dA{i}': dA, f'dW{i}': dW, f'db{i}': db})
+
+    return grads
 
 
 def update_parameters(parameters, grads, learning_rate):
