@@ -70,7 +70,7 @@ def linear_activation_forward(A_prev, W, B, activation):
     :return cache: a joint dictionary containing both linear_cache and activation_cache
     """
     Z, linear_cache = linear_forward(A_prev, W, B)
-    A_cur, activation_cache = relu(Z) if activation == 'relu' else softmax(Z)
+    A_cur, activation_cache = relu(Z) if activation == 'relu' else safe_softmax(Z)
 
     return A_cur, {**linear_cache, **activation_cache}
 

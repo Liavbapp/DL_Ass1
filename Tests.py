@@ -5,6 +5,20 @@ import backward
 import forward
 import numpy as np
 
+import train_model
+
+
+class TestTrainModel(unittest.TestCase):
+    def test_L_layer_model(self):
+        X = np.random.rand(50, 100)
+        Y = np.random.rand(4, 100)
+        layers_dim = [50, 25, 15, 10, 4]
+        lr = 1e-5
+        num_iter = 1000
+        batch_size = 64
+        train_model.L_layer_model(X, Y, layers_dim, lr, num_iter, batch_size)
+
+
 
 class TestBackward(unittest.TestCase):
 
