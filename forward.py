@@ -93,6 +93,7 @@ def L_model_forward(X, parameters, use_batchnorm):  # Todo: add testing to check
         b_i = parameters[f'b{i}']
         activation_function = 'softmax' if i == num_layers else 'relu'
         A_i, lin_cache_i = linear_activation_forward(activations_prev, W_i, b_i, activation_function)
+        lin_cache_i.update({'A_prev': X}) if i == 1 else lin_cache_i.update({'A_prev': caches[i-2]['A']})
         A_i = apply_batchnorm(A_i) if use_batchnorm else A_i
         activations_prev = A_i
         caches.append(lin_cache_i)

@@ -8,14 +8,168 @@ import numpy as np
 
 class TestBackward(unittest.TestCase):
 
+    def test_update_parameters(self):
+        parameters = forward.initialize_parameters([2, 5, 6, 8, 4])
+        grads = self.test_L_model_backward_t1()
+        backward.update_parameters(parameters, grads, 1e-05)
+
+    def test_L_model_backward_t1(self):
+        Y = np.array([[0, 0, 0],
+                      [0, 0, 1],
+                      [0, 1, 0],
+                      [1, 0, 0]])
+        AL = np.random.rand(4, 3)
+
+        X = np.random.rand(2, 3)
+
+        A_1 = np.random.rand(5, 3)
+        W_1 = np.random.rand(5, 2)
+        b_1 = np.zeros(5)
+        Z_1 = np.random.rand(5, 3)
+
+        A_2 = np.random.rand(6, 3)
+        W_2 = np.random.rand(6, 5)
+        b_2 = np.zeros(6)
+        Z_2 = np.random.rand(6, 3)
+
+        A_3 = np.random.rand(8, 3)
+        W_3 = np.random.rand(8, 6)
+        b_3 = np.zeros(8)
+        Z_3 = np.random.rand(8, 3)
+
+        W_4 = np.random.rand(4, 8)
+        b_4 = np.random.rand(4)
+        Z_4 = np.random.rand(4, 3)
+
+        caches = [{'A': A_1, 'W': W_1, 'b': b_1, 'Z': Z_1, 'A_prev': X},
+                  {'A': A_2, 'W': W_2, 'b': b_2, 'Z': Z_2, 'A_prev': A_1},
+                  {'A': A_3, 'W': W_3, 'b': b_3, 'Z': Z_3, 'A_prev': A_2},
+                  {'W': W_4, 'b': b_4, 'Z': Z_4, 'A_prev': A_3}]
+        grads = backward.L_model_backward(AL, Y, caches)
+        return grads
+        # TODO: think what should check here
+
+    def test_linear_activation_backward_t1(self):
+        dA = np.random.rand(4, 3)
+        W = np.random.rand(4, 2)
+        A_prev = np.random.rand(2, 3)
+        b = np.random.rand(4)
+        Z = np.random.rand(4, 3)
+        cache = {'A_prev': A_prev, 'W': W, 'b': b, 'Z': Z}
+        activation = 'relu'
+        dA_prev, dW, db = backward.linear_activation_backward(dA, cache, activation)
+        self.assertTrue(dA_prev.shape == A_prev.shape)
+        self.assertTrue(dW.shape == W.shape)
+        self.assertTrue(len(db) == len(b))
+
+    def test_linear_activation_backward_t2(self):
+        dA = np.array([[0.21098139, 0.80887648, 0.63129459],
+                       [0.9231179, 0.80320317, 0.4025595],
+                       [0.17298121, 0.42113407, 0.0486199],
+                       [0.0233728, 0.04999076, 0.90464782]])
+        W = np.array([[0.02435659, 0.73042888],
+                      [0.65274798, 0.72775886],
+                      [0.22984701, 0.44011644],
+                      [0.79247049, 0.79363942]])
+        A_prev = np.array([[0.49246012, 0.87839709, 0.44732685],
+                           [0.81774705, 0.33258335, 0.61701825]])
+        b = np.array([0.51139094, 0.23687642, 0.28263582, 0.27284513])
+        Z = np.array([[0.94554033, 0.63330248, 0.73152872],
+                      [0.47747495, 0.60868134, 0.26155258],
+                      [0.92046054, 0.74243511, 0.6106922],
+                      [0.94585124, 0.80333754, 0.68125028]])
+        cache = {'A_prev': A_prev, 'W': W, 'b': b, 'Z': Z}
+        activation = 'relu'
+        dA_prev, dW, db = backward.linear_activation_backward(dA, cache, activation)
+        expected_dA_prev = np.array([[0.22199453, 0.22680111, 0.33540931],
+                                     [0.30686519, 0.46679588, 0.49781488]])
+        expected_dW = np.array([[0.36560323, 0.27702285],
+                                [0.44673525, 0.42346517],
+                                [0.15895276, 0.10383881],
+                                [0.15336506, 0.19797445]])
+        expected_db = np.array([0.55038416, 0.70962686, 0.21424506, 0.32600379])
+        np.testing.assert_allclose(expected_dA_prev, dA_prev)
+        np.testing.assert_allclose(expected_dW, dW)
+        np.testing.assert_allclose(expected_db, db)
+
+    def test_linear_activation_backward_t3(self):
+        dA = np.random.rand(4, 3)
+        W = np.random.rand(4, 2)
+        A_prev = np.random.rand(2, 3)
+        b = np.random.rand(4)
+        AL = np.random.rand(4, 3)
+        TL = np.array([[0, 0, 0],
+                       [0, 0, 1],
+                       [0, 1, 0],
+                       [1, 0, 0]])
+        cache = {'A_prev': A_prev, 'W': W, 'b': b, 'AL': AL, 'TL': TL}
+        activation = 'softmax'
+        dA_prev, dW, db = backward.linear_activation_backward(dA, cache, activation)
+        self.assertTrue(dA_prev.shape == A_prev.shape)
+        self.assertTrue(dW.shape == W.shape)
+        self.assertTrue(len(db) == len(b))
+
+    def test_linear_activation_backward_t4(self):
+        dA = np.array([[0.38678987, 0.70576783, 0.67039193],
+                       [0.25817194, 0.37535546, 0.58092773],
+                       [0.87944203, 0.26787023, 0.61525293],
+                       [0.32641604, 0.52220628, 0.52038576]])
+        W = np.array([[0.55653085, 0.41598685],
+                      [0.22559938, 0.47219151],
+                      [0.83990884, 0.0070055],
+                      [0.13316894, 0.58901452]])
+        A_prev = np.array([[0.28656504, 0.98706951, 0.94158742],
+                           [0.39712374, 0.40698207, 0.96741623]])
+        b = np.array([0.1088967, 0.45946371, 0.46842081, 0.03393588])
+        AL = np.array([[0.23142199, 0.85171761, 0.65881687],
+                       [0.66372589, 0.610177, 0.33215812],
+                       [0.3619561, 0.37279029, 0.65403617],
+                       [0.68263797, 0.70080108, 0.62055627]])
+        TL = np.array([[0, 0, 0],
+                       [0, 0, 1],
+                       [0, 1, 0],
+                       [1, 0, 0]])
+        cache = {'A_prev': A_prev, 'W': W, 'b': b, 'AL': AL, 'TL': TL}
+        activation = 'softmax'
+        dA_prev, dW, db = backward.linear_activation_backward(dA, cache, activation)
+        expected_dA_prev = np.array([[0.11401257, 0.09794328, 0.1797522],
+                                     [0.019787, 0.19086127, 0.06452019]])
+        expected_dW = np.array([[0.34495326, 0.23582153],
+                                [-0.03004314, -0.07135489],
+                                [0.10142448, 0.14910695],
+                                [0.21187011, 0.14006927]])
+        expected_db = np.array([0.3774307, 0.00414027, 0.18423542, 0.19509977])
+        np.testing.assert_allclose(expected_dA_prev, dA_prev, rtol=1e-5)
+        np.testing.assert_allclose(expected_db, db, rtol=1e-5)
+        np.testing.assert_allclose(expected_dW, dW, rtol=1e-5)
+
+    def test_relu_backward_t1(self):
+        dA = np.random.rand(3, 5)
+        Z = np.random.uniform(low=-1, high=1, size=(3, 5))
+        dZ = backward.relu_backward(dA, {'Z': Z})
+        self.assertTrue(dZ.shape == Z.shape)
+
+    def test_relu_backward_t2(self):
+        dA = np.array([[0.2242745, 0.89220195, 0.33801215, 0.93227591, 0.50297619],
+                       [0.00888459, 0.37007018, 0.21447213, 0.03848206, 0.32334354],
+                       [0.15498739, 0.73187147, 0.74484787, 0.7523929, 0.63635721]])
+        Z = np.array([[-0.64935349, -0.34498839, -0.77024328, -0.41864709, 0.42921059],
+                      [-0.92069796, 0.36220666, 0.55519943, -0.43732788, 0.19196449],
+                      [0.24354533, 0.86127816, -0.60294945, -0.09121491, 0.85804193]])
+        dZ = backward.relu_backward(dA, {'Z': Z})
+        expected_dZ = np.array([[0., 0., 0., 0., 0.50297619],
+                                [0., 0.37007018, 0.21447213, 0., 0.32334354],
+                                [0.15498739, 0.73187147, 0., 0., 0.63635721]])
+        np.testing.assert_allclose(dZ, expected_dZ)
+
     def test_softmax_backward_t1(self):
         A_L = np.random.rand(2, 3)
         T_L = np.array([[1, 0, 1],
                         [0, 1, 0]])
         dA = np.random.rand(2, 3)
-        activation_cache = {'A_L': A_L, 'T_L': T_L}
+        activation_cache = {'AL': A_L, 'TL': T_L}
         dZ = backward.softmax_backward(dA, activation_cache)
-        self.assertTrue(dZ.shape == (2, 3))
+        self.assertTrue(dZ.shape == A_L.shape)
 
     def test_softmax_backward_t2(self):
         A_L = np.array([[0.71453991, 0.66455975, 0.6709691],
@@ -24,7 +178,7 @@ class TestBackward(unittest.TestCase):
                         [0, 1, 0]])
         dA = np.array([[0.0584136, 0.47822658, 0.14694834],
                        [0.31270005, 0.62306705, 0.87186516]])
-        activation_cache = {'A_L': A_L, 'T_L': T_L}
+        activation_cache = {'AL': A_L, 'TL': T_L}
         dZ = backward.softmax_backward(dA, activation_cache)
         dZ_expected = np.array([[-0.01667475, 0.31781014, -0.04835054],
                                 [0.23609603, -0.54523227, 0.08551733]])

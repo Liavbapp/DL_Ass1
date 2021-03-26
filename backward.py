@@ -52,8 +52,8 @@ def relu_backward(dA, activation_cache):
     :return dZ: gradient of the cost with respect to Z
     """
     Z = activation_cache['Z']
-    a_derv = np.vectorize(lambda zi: 0 if zi <= 0 else 1)(Z)
-    dZ = np.matmul(dA, a_derv)
+    da_dz = np.vectorize(lambda zi: 0 if zi <= 0 else 1)(Z)
+    dZ = dA * da_dz
     return dZ
 
 
@@ -64,9 +64,9 @@ def softmax_backward(dA, activation_cache):
     :param activation_cache: contains Z (stored during the forward propagation) ->>> Gilad said on forum that it ok to assume we get here A_L (soft_max results) and True_labels
     :return dZ: gradient of the cost with respect to Z
     """
-    a_L = activation_cache['A_L']  # our's softmax (last layer) probabilities
-    t_L = activation_cache['T_L']  # True labels
-    dZ = dA * (a_L - t_L)  # (a_L - t_L) is da/dz  TODO: not sure, need to verify
+    a_L = activation_cache['AL']  # our's softmax (last layer) probabilities
+    t_L = activation_cache['TL']  # True labels
+    dZ = dA * (a_L - t_L)  # (a_L - t_L) is da_dz  TODO: not sure, need to verify
     return dZ
 
 
@@ -82,16 +82,16 @@ def L_model_backward(AL, Y, caches):
              grads["db" + str(l)] = ...
 
     """
-    # TODO: validate indexing
     num_layers = len(caches)
     grads = {}
-    caches[num_layers]['TL'] = Y  # true labels are part of the cache of last layer
+    caches[num_layers - 1]['TL'] = Y  # true labels are part of the cache of last layer
+    caches[num_layers - 1]['AL'] = AL
     dA_prev = None
-    for i in range(num_layers, 0):
-        activation = 'softmax' if i == num_layers else 'relu'
-        dA = dA_prev if i < num_layers else -(Y / AL) + (1 - Y) / (1 - AL)
-        dA_prev, dW, db = linear_activation_backward(AL, caches[num_layers - 1], activation)
-        grads.update({f'dA{i}': dA, f'dW{i}': dW, f'db{i}': db})
+    for layer_i in range(num_layers, 0, -1):
+        activation = 'softmax' if layer_i == num_layers else 'relu'
+        dA = dA_prev if layer_i < num_layers else -(Y / AL) + (1 - Y) / (1 - AL)
+        dA_prev, dW, db = linear_activation_backward(dA, caches[layer_i - 1], activation)
+        grads.update({f'dA{layer_i}': dA, f'dW{layer_i}': dW, f'db{layer_i}': db})
 
     return grads
 
