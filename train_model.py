@@ -1,3 +1,7 @@
+import backward
+import forward
+
+
 def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     """
     Implements a L-layer neural network.
@@ -15,7 +19,16 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
                     One value is to be saved after each 100 training iterations (e.g. 3000 iterations -> 30 values).
 
     """
-    pass
+
+    m = X.shape[2]
+    for epoch in num_iterations:
+        for i in range(0, len(X), batch_size):
+            params = forward.initialize_parameters(layers_dims)
+            prediction, caches = forward.L_model_forward(X, params, use_batchnorm=False)
+            cost = forward.compute_cost(prediction, Y)
+            grads = backward.L_model_backward(prediction, Y, caches)
+            params = backward.update_parameters(params, grads, learning_rate)
+
 
 
 def predict(X, Y, parameters):
