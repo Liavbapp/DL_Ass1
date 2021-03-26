@@ -1,7 +1,69 @@
 import random
 import unittest
+
+import backward
 import forward
 import numpy as np
+
+
+class TestBackward(unittest.TestCase):
+
+    def test_softmax_backward_t1(self):
+        A_L = np.random.rand(2, 3)
+        T_L = np.array([[1, 0, 1],
+                        [0, 1, 0]])
+        dA = np.random.rand(2, 3)
+        activation_cache = {'A_L': A_L, 'T_L': T_L}
+        dZ = backward.softmax_backward(dA, activation_cache)
+        self.assertTrue(dZ.shape == (2, 3))
+
+    def test_softmax_backward_t2(self):
+        A_L = np.array([[0.71453991, 0.66455975, 0.6709691],
+                        [0.75502395, 0.124922, 0.0980855]])
+        T_L = np.array([[1, 0, 1],
+                        [0, 1, 0]])
+        dA = np.array([[0.0584136, 0.47822658, 0.14694834],
+                       [0.31270005, 0.62306705, 0.87186516]])
+        activation_cache = {'A_L': A_L, 'T_L': T_L}
+        dZ = backward.softmax_backward(dA, activation_cache)
+        dZ_expected = np.array([[-0.01667475, 0.31781014, -0.04835054],
+                                [0.23609603, -0.54523227, 0.08551733]])
+        np.testing.assert_allclose(dZ, dZ_expected)
+
+    def test_linear_backward_t1(self):
+        dZ = np.random.rand(2,
+                            5)  # dim: 2x5 (number of neurons current layer x number of instances in the batch). each row is gradient vector
+        W = np.random.rand(2, 3)  # dim: 2x3 (cur_layer_nbr_neurons x prev_layer_nbr_neurons)
+        b = np.random.rand(2)  # dim: 2 (number of neurons cur layer)
+        A_prev = np.random.rand(3, 5)  # dim: 3x5 (number of neurons prev layer x number of instances in the batch)
+        cache = {'A_prev': A_prev, 'W': W, 'b': b}
+        dA_prev, dW, db = backward.Linear_backward(dZ, cache)
+        self.assertTrue(dA_prev.shape == A_prev.shape)
+        self.assertTrue(dW.shape == W.shape)
+        self.assertTrue(db.shape == b.shape)
+
+    def test_linear_backward_t2(self):
+        dZ = np.array([[0.38264578, 0.82389831, 0.42980474, 0.24462336, 0.11402943],
+                       [0.44298328, 0.69824283, 0.50412281, 0.94706762,
+                        0.88424902]])  # dim: 2x5 (number of neurons current layer x number of instances in the batch). each row is gradient vector
+        W = np.array([[0.02252559, 0.16737019, 0.17820524], [0.21318285, 0.88147624,
+                                                             0.01027424]])  # dim: 2x3 (cur_layer_nbr_neurons x prev_layer_nbr_neurons)
+        b = np.array([0.24736851, 0.47307659])  # dim: 2 (number of neurons cur layer)
+        A_prev = np.array([[0.83753335, 0.20400821, 0.47304129, 0.37658064, 0.01167356],
+                           [0.85881864, 0.70107786, 0.24634004, 0.97749331, 0.82313173],
+                           [0.77861885, 0.05464926, 0.46090311, 0.01173639,
+                            0.30267204]])  # dim: 3x5 (number of neurons prev layer x number of instances in the batch)
+        cache = {'A_prev': A_prev, 'W': W, 'b': b}
+        dA_prev, dW, db = backward.Linear_backward(dZ, cache)
+        expected_dA_prev = np.array([[0.02061115, 0.03348244, 0.02343039, 0.04148177, 0.03821506],
+                                     [0.09090455, 0.1506761, 0.10326176, 0.17515205, 0.15970593],
+                                     [0.01454816, 0.03079938, 0.01635459, 0.01066471, 0.00588113]])
+        expected_dW = np.array([[0.15706551, 0.26901945, 0.1156887],
+                                [0.22378022, 0.52955124, 0.17883559]])
+        expected_db = np.array([0.39900032, 0.69533311])
+        np.testing.assert_allclose(dA_prev, expected_dA_prev, rtol=1e-5)
+        np.testing.assert_allclose(dW, expected_dW, rtol=1e-5)
+        np.testing.assert_allclose(db, expected_db, rtol=1e-5)
 
 
 class TestsForward(unittest.TestCase):
@@ -108,7 +170,6 @@ class TestsForward(unittest.TestCase):
         res_A, res_dict = forward.linear_activation_forward(A_prev, W, b, activation)
         np.testing.assert_allclose(res_A, expected_A)
         self.assertTrue(set(res_dict.keys()) == expected_dict_keys)
-
 
     def test_apply_batchnorm_t1(self):
         A = np.array([1, 2, 3, 4, 5, 6])

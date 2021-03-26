@@ -11,12 +11,14 @@ def Linear_backward(dZ, cache):
     :return db: Gradient of the cost with respect to b (current layer l), same shape as b
     """
     A_prev = cache['A_prev']
-    A_prev_t = A_prev.reshape(len(A_prev), 1)
+    A_prev_t = A_prev.transpose()
     W = cache['W']
+    W_t = W.transpose()
+    m = len(dZ[0])
 
-    dA_prev = np.matmul(dZ, W)
-    dW = np.matmul(dZ, A_prev_t)
-    db = dZ
+    dA_prev = (1 / m) * np.matmul(W_t, dZ)  # TODO: not sure 100% about this
+    dW = (1 / m) * np.matmul(dZ, A_prev_t)
+    db = (1 / m) * np.sum(dZ, axis=1)
 
     return dA_prev, dW, db
 
@@ -33,11 +35,11 @@ def linear_activation_backward(dA, cache, activation):
     :return db: Gradient of the cost with respect to b (current layer l), same shape as b
     """
     if activation == 'softmax':
-        dz = softmax_backward(dA, cache)
+        dZ = softmax_backward(dA, cache)
     else:  # activation = 'relu'
-        dz = relu_backward(dA, cache)
+        dZ = relu_backward(dA, cache)
 
-    dA_prev, dW, db = Linear_backward(dz, cache)
+    dA_prev, dW, db = Linear_backward(dZ, cache)
 
     return dA_prev, dW, db
 
@@ -64,9 +66,8 @@ def softmax_backward(dA, activation_cache):
     """
     a_L = activation_cache['A_L']  # our's softmax (last layer) probabilities
     t_L = activation_cache['T_L']  # True labels
-    a_derv = a_L - t_L
-    dZ = np.matmul(dA, a_derv)
-    raise dZ
+    dZ = dA * (a_L - t_L)  # (a_L - t_L) is da/dz  TODO: not sure, need to verify
+    return dZ
 
 
 def L_model_backward(AL, Y, caches):
@@ -103,4 +104,8 @@ def update_parameters(parameters, grads, learning_rate):
     :param learning_rate: the learning rate used to update the parameters (the “alpha”)
     :return parameters: the updated values of the parameters object provided as input
     """
-    pass
+    n_layers = int(len(parameters) / 2)
+    for i in range(1, n_layers + 1):
+        parameters[f'W{i}'] -= learning_rate * grads[f'dW{i}']
+        parameters[f'b{i}'] -= learning_rate * grads[f'db{i}']
+    return parameters
