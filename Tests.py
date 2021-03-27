@@ -10,14 +10,18 @@ import train_model
 
 class TestTrainModel(unittest.TestCase):
     def test_L_layer_model(self):
-        X = np.random.rand(50, 100)
-        Y = np.random.rand(4, 100)
-        layers_dim = [50, 25, 15, 10, 4]
+        X = np.random.rand(5, 3)
+        Y = np.array([[0, 0, 0],
+                      [0, 0, 1],
+                      [0, 1, 0],
+                      [1, 0, 0]])
+        layers_dim = [5, 10, 16, 4]
         lr = 1e-5
-        num_iter = 1000
-        batch_size = 64
-        train_model.L_layer_model(X, Y, layers_dim, lr, num_iter, batch_size)
+        num_iter = 10000
+        batch_size = 2
 
+        params, costs = train_model.L_layer_model(X, Y, layers_dim, lr, num_iter, batch_size)
+        self.assertTrue(list(reversed(sorted(costs))) == costs)  # checking the costs are in descending order
 
 
 class TestBackward(unittest.TestCase):
@@ -376,10 +380,16 @@ class TestsForward(unittest.TestCase):
     def test_softmax_t2(self):
         Z = np.array([[1, 2, 4, -3],
                       [-1, 5, 8, 0]])
-        expected_res = np.array([[8.50660828e-04, 2.31233587e-03, 1.70859795e-02, 1.55803965e-05],
-                                 [1.15124424e-04, 4.64445075e-02, 9.32862871e-01, 3.12940630e-04]])
         actual_res = forward.softmax(Z)[0]
-        np.testing.assert_allclose(expected_res, actual_res)
+        col_sum = np.sum(actual_res, axis=0)
+        np.testing.assert_allclose(col_sum, np.ones(4))
+
+    def test_softmax_sfae_t1(self):
+        Z = np.array([[1, 2, 4, -3],
+                      [-1, 5, 8, 0]])
+        actual_res = forward.safe_softmax(Z)[0]
+        col_sum = np.sum(actual_res, axis=0)
+        np.testing.assert_allclose(col_sum, np.ones(4))
 
     def test_compute_cost(self):
         AL = np.array([[0.5, 0.3, 0.5, 0.4],
@@ -399,3 +409,4 @@ class TestsForward(unittest.TestCase):
         use_batchnorm = False
         forward_result = forward.L_model_forward(X, params, use_batchnorm)[0]
         self.assertTrue(forward_result.shape == (2, 6))
+        np.testing.assert_allclose(np.sum(forward_result, axis=0), np.ones(6))

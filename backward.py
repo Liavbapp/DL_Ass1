@@ -16,7 +16,7 @@ def Linear_backward(dZ, cache):
     W_t = W.transpose()
     m = len(dZ[0])
 
-    dA_prev = (1 / m) * np.matmul(W_t, dZ)  # TODO: not sure 100% about this
+    dA_prev = np.matmul(W_t, dZ)  # TODO: not sure 100% about this
     dW = (1 / m) * np.matmul(dZ, A_prev_t)
     db = (1 / m) * np.sum(dZ, axis=1)
 
@@ -66,7 +66,8 @@ def softmax_backward(dA, activation_cache):
     """
     a_L = activation_cache['AL']  # our's softmax (last layer) probabilities
     t_L = activation_cache['TL']  # True labels
-    dZ = dA * (a_L - t_L)  # (a_L - t_L) is da_dz  TODO: not sure, need to verify
+    # dZ = dA * (a_L - t_L)  # (a_L - t_L) is da_dz  TODO: not sure, need to verify
+    dZ = a_L - t_L
     return dZ
 
 

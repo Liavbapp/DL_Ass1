@@ -24,7 +24,7 @@ def linear_forward(A, W, b):
     # A_t = np.expand_dims(A, axis=1)
     b_t = np.expand_dims(b, axis=1)
     Z = np.matmul(W, A) + b_t
-    linear_cache = {'A': A, 'W': W, 'b': b}
+    linear_cache = {'A_prev': A, 'W': W, 'b': b}
     return Z, linear_cache
 
 
@@ -35,7 +35,7 @@ def softmax(Z):
     :return activation_cache: returns Z, which will be useful for the backpropagation
     """
     exp = np.exp(Z)
-    A = exp / np.sum(exp)
+    A = exp / np.sum(exp, axis=0)[None, :]
     return A, {'Z': Z}
 
 
@@ -88,16 +88,15 @@ def L_model_forward(X, parameters, use_batchnorm):  # Todo: add testing to check
     num_layers = int(len(parameters) / 2)
     activations_prev = X
     A_i = None
-    for i in range(1, num_layers + 1):
-        W_i = parameters[f'W{i}']
-        b_i = parameters[f'b{i}']
-        activation_function = 'softmax' if i == num_layers else 'relu'
+    for layer_i in range(1, num_layers + 1):
+        W_i = parameters[f'W{layer_i}']
+        b_i = parameters[f'b{layer_i}']
+        activation_function = 'softmax' if layer_i == num_layers else 'relu'
         A_i, lin_cache_i = linear_activation_forward(activations_prev, W_i, b_i, activation_function)
-        lin_cache_i.update({'A_prev': X}) if i == 1 else lin_cache_i.update({'A_prev': caches[i-2]['A']})
+        # lin_cache_i.update({'A_prev': X}) if layer_i == 1 else lin_cache_i.update({'A_prev': caches[layer_i - 2]['A']})
+        caches.append(lin_cache_i)
         A_i = apply_batchnorm(A_i) if use_batchnorm else A_i
         activations_prev = A_i
-        caches.append(lin_cache_i)
-
     return A_i, caches
 
 
