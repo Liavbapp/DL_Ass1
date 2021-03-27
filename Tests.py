@@ -5,23 +5,21 @@ import backward
 import forward
 import numpy as np
 
-import train_model
+import model_trainer
 
 
 class TestTrainModel(unittest.TestCase):
     def test_L_layer_model(self):
-        X = np.random.rand(5, 3)
-        Y = np.array([[0, 0, 0],
-                      [0, 0, 1],
-                      [0, 1, 0],
-                      [1, 0, 0]])
-        layers_dim = [5, 10, 16, 4]
-        lr = 1e-5
-        num_iter = 10000
-        batch_size = 2
 
-        params, costs = train_model.L_layer_model(X, Y, layers_dim, lr, num_iter, batch_size)
-        self.assertTrue(list(reversed(sorted(costs))) == costs)  # checking the costs are in descending order
+        X = np.random.rand(784, 48000)
+        Y = np.random.rand(10, 48000)
+        layers_dim = [784, 20, 7, 5, 10]
+        lr = 0.009
+        batch_size = 256
+        num_iter = 10000
+
+        params, costs = model_trainer.L_layer_model(X, Y, layers_dim, lr, num_iter, batch_size)
+        # self.assertTrue(list(reversed(sorted(costs))) == costs)  # checking the costs are in descending order
 
     def test_predict(self):
         X = np.array([[0.41146617, 0.71607216, 0.86256799],
@@ -34,7 +32,7 @@ class TestTrainModel(unittest.TestCase):
                       [0, 1, 0],
                       [1, 0, 0]])
         params = get_params()
-        accuracy = train_model.predict(X, Y, params)
+        accuracy = model_trainer.predict(X, Y, params)
         self.assertTrue(accuracy == 1)
 
 
