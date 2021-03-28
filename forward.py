@@ -6,7 +6,9 @@ def initialize_parameters(layer_dims):
     :param layer_dims: an array of the dimensions of each layer in the network
     :return: a dictionary containing the initialized W and b parameters of each layer
     """
-    params = {f'W{i + 1}': np.random.rand(layer_dims[i + 1], layer_dims[i]) for i in range(len(layer_dims) - 1)}
+    # TODO: Weight init make sense ?
+    params = {f'W{i + 1}': np.random.randn(layer_dims[i + 1], layer_dims[i]) * np.sqrt(2 / layer_dims[i]) for i in
+              range(len(layer_dims) - 1)}
     params.update({f'b{i + 1}': np.zeros(layer_dims[i + 1]) for i in range(len(layer_dims) - 1)})
 
     return params
@@ -94,7 +96,6 @@ def L_model_forward(X, parameters, use_batchnorm):
         b_i = parameters[f'b{layer_i}']
         activation_function = 'softmax' if layer_i == num_layers else 'relu'
         A_i, lin_cache_i = linear_activation_forward(activations_prev, W_i, b_i, activation_function)
-        # lin_cache_i.update({'A_prev': X}) if layer_i == 1 else lin_cache_i.update({'A_prev': caches[layer_i - 2]['A']})
         caches.append(lin_cache_i)
         A_i = apply_batchnorm(A_i) if use_batchnorm else A_i
         activations_prev = A_i
@@ -109,14 +110,8 @@ def compute_cost(AL, Y):
     :return cost: the cross-entropy cost
     """
     m = len(AL[0])
-    cost = (-1 / m) * sum(np.matmul(Y[:, i], np.log(AL[:, i])) for i in range(0, m))
+    cost = (-1 / m) * sum(np.matmul(Y[:, i], np.log(AL[:, i])) for i in range(0, m)) #TODO: can be vectorized ?
     return cost
-    # for i in range(0, m):  # TODO: check if can vectorize
-    #     labels_t = Y[:, i]
-    #     softmax_pred = np.log(AL[:, i])
-    #     cost += np.matmul(labels_t, softmax_pred)
-    # cost = (-1 / m) * cost
-    # return cost
 
 
 def apply_batchnorm(A):
@@ -125,7 +120,7 @@ def apply_batchnorm(A):
     :param A: the activation values of a given layer
     :return NA: the normalized activation values, based on the formula learned in class
     """
-    #TODO: returns nan when batch_norm is on
+    # TODO: the impl is correct ?
     epsilon = 0.000000001  # prevent divding by zero
     mu = np.average(A)
     variance = np.var(A)

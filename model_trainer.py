@@ -29,9 +29,9 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     costs = []
     for epoch in range(0, num_iterations):
 
-        # np.random.shuffle(combined_data)
+        # TODO: should we randomized that data and split to different batches each epoch?
         # np.random.shuffle(np.transpose(combined_data))
-        # batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1) #TODO: split to batches?
+        # batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1)
 
         if epoch % 1 == 0 and epoch > 0:
             print(epoch)
@@ -41,7 +41,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
         for batch in batches:
             X_batch = batch[0:X.shape[0], :]
             Y_batch = batch[X.shape[0]:, :]
-            prediction, caches = forward.L_model_forward(X_batch, params, use_batchnorm=False)
+            prediction, caches = forward.L_model_forward(X_batch, params, use_batchnorm=False) #TODO: when batch norm is True we get nan values while learning
             grads = backward.L_model_backward(prediction, Y_batch, caches)
             params = backward.update_parameters(params, grads, learning_rate)
 
@@ -63,7 +63,7 @@ def predict(X, Y, parameters):
     """
     # TODO: check what "use softmax function to normalize output values" means
     m = X.shape[1]
-    prediction, caches = forward.L_model_forward(X, parameters, use_batchnorm=False)
+    prediction, caches = forward.L_model_forward(X, parameters, use_batchnorm=False) #TODO: see the above comment about batch norm
     prediction_arg_max = np.argmax(prediction, axis=0)
     label_arg_max = np.argmax(Y, axis=0)
     correct_predictions = np.sum(prediction_arg_max == label_arg_max)

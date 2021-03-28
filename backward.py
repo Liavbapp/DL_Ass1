@@ -61,13 +61,13 @@ def softmax_backward(dA, activation_cache):
     """
     Implements backward propagation for a softmax unit
     :param dA: the post-activation gradient
-    :param activation_cache: contains Z (stored during the forward propagation) ->>> Gilad said on forum that it ok to assume we get here A_L (soft_max results) and True_labels
+    :param activation_cache: contains Z (stored during the forward propagation)
     :return dZ: gradient of the cost with respect to Z
     """
+    # Gilad said on forum that it is ok to assume we get here A_L (soft_max results) and True_labels
     a_L = activation_cache['AL']  # our's softmax (last layer) probabilities
     t_L = activation_cache['TL']  # True labels
-    # dZ = dA * (a_L - t_L)  # (a_L - t_L) is da_dz  TODO: not sure, need to verify
-    dZ = a_L - t_L
+    dZ = a_L - t_L  # TODO: its the computation as in lecture, but why we get dA as input?
     return dZ
 
 
@@ -85,8 +85,8 @@ def L_model_backward(AL, Y, caches):
     """
     num_layers = len(caches)
     grads = {}
-    caches[num_layers - 1]['TL'] = Y  # true labels are part of the cache of last layer
-    caches[num_layers - 1]['AL'] = AL
+    caches[num_layers - 1]['TL'] = Y  # ground True labels. adding as part of the cache
+    caches[num_layers - 1]['AL'] = AL # Last layer activation labels (softmax results). adding it as part of the cache
     dA_prev = None
     for layer_i in range(num_layers, 0, -1):
         activation = 'softmax' if layer_i == num_layers else 'relu'
