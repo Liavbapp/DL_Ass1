@@ -35,13 +35,28 @@ def pre_process():
     test_x, test_y = reshape_data(test_data)
     train_x, train_y, validation_x, validation_y = generate_validation_data(train_x, train_y)
     train_y, test_y, validation_y = expand_y(train_y), expand_y(test_y), expand_y(validation_y)
+
+    # train_x, validation_x, test_x = normalize_input(train_x, validation_x, test_x)
+
     return {'train_x': train_x.T, 'train_y': train_y.T, 'test_x': test_x.T, 'test_y': test_y.T,
             'validation_x': validation_x.T, 'validation_y': validation_y.T}
 
+
+def normalize_input(train_x, validation_x, test_x):
+    conct_arr = np.concatenate([train_x, validation_x, test_x], axis=0)
+    train_len, validation_len, test_len = train_x.shape[0], validation_x.shape[0], test_x.shape[0]
+    avg = np.sum(conct_arr) / (conct_arr.shape[0] * conct_arr.shape[1])
+    std = np.std(conct_arr)
+    normalized = (conct_arr - avg) / (std ** 2)
+    train_x = normalized[:train_len, :]
+    validation_x = normalized[train_len:train_len+validation_len, :]
+    test_x = normalized[train_len + validation_len:, :]
+    return train_x, validation_x, test_x
+
 def normalize_arr(arr):
-    avg = np.sum(arr, axis=0) / arr.shape[0]
-    std = np.std(arr, axis=0)
-    return (arr - avg) / std**2
+    avg = np.sum(arr) / (arr.shape[0] * arr.shape[1])
+    std = np.std(arr)
+    return (arr - avg) / std ** 2
 
 
 def normalize_data(data_dict):
@@ -49,16 +64,18 @@ def normalize_data(data_dict):
                       'test_x': normalize_arr(data_dict['test_x'])})
     return data_dict
 
+
 def run_config():
     data_set = pre_process()
-    data_set = normalize_data(data_set) # helps to prevent nans at start of learning
+    # data_set = normalize_data(data_set)
     layers_dim = [784, 20, 7, 5, 10]
-    lr = 0.0009
-    epochs = 10000
-    batch_size = 2048
+    lr = 0.009
+    epochs = 1000
+    batch_size = 1024
     params, costs = model_trainer.L_layer_model(X=data_set['train_x'], Y=data_set['train_y'], layers_dims=layers_dim,
                                                 learning_rate=lr, num_iterations=epochs, batch_size=batch_size)
-    print(costs)
+    print(model_trainer.predict(X=data_set['train_x'], Y=data_set['train_y'], parameters=params))
+    # print(costs)
 
 
 if __name__ == '__main__':

@@ -21,13 +21,14 @@ class TestTrainModel(unittest.TestCase):
         batch_size = 2
 
         params, costs = model_trainer.L_layer_model(X, Y, layers_dim, lr, num_iter, batch_size)
+        print(model_trainer.predict(X, Y, params))
         self.assertTrue(list(reversed(sorted(costs))) == costs)  # checking the costs are in descending order
 
     def test_L_layer_model_t2(self):
         X = np.random.rand(784, 48000)
 
         Y = np.zeros((10, 48000))
-        Y[4, 1:100] = 1
+        Y[4, 0:100] = 1
         Y[5, 100:5000] = 1
         Y[6, 5000:20000] = 1
         Y[7, 20000:40000] = 1

@@ -28,11 +28,13 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     params = forward.initialize_parameters(layers_dims)
     costs = []
     for epoch in range(0, num_iterations):
+
         # np.random.shuffle(combined_data)
         # np.random.shuffle(np.transpose(combined_data))
         # batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1) #TODO: split to batches?
 
-        if epoch % 2 == 0 and epoch > 0:
+        if epoch % 1 == 0 and epoch > 0:
+            print(epoch)
             cost = forward.compute_cost(prediction, Y_batch)
             costs.append(cost)
             print(cost)
