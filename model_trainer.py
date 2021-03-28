@@ -22,20 +22,24 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     """
     combined_data = np.concatenate([X, Y], axis=0)
     m = X.shape[1]
-    num_batches = int(m / batch_size)
+    num_batches = 1 if m <= batch_size else int(m / batch_size)
     batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1)
 
     params = forward.initialize_parameters(layers_dims)
     costs = []
     for epoch in range(0, num_iterations):
+        # np.random.shuffle(combined_data)
+        # np.random.shuffle(np.transpose(combined_data))
+        # batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1) #TODO: split to batches?
+
+        if epoch % 2 == 0 and epoch > 0:
+            cost = forward.compute_cost(prediction, Y_batch)
+            costs.append(cost)
+            print(cost)
         for batch in batches:
             X_batch = batch[0:X.shape[0], :]
             Y_batch = batch[X.shape[0]:, :]
             prediction, caches = forward.L_model_forward(X_batch, params, use_batchnorm=False)
-            if epoch % 100 == 0:
-                cost = forward.compute_cost(prediction, Y_batch)
-                costs.append(cost)
-                print(cost)
             grads = backward.L_model_backward(prediction, Y_batch, caches)
             params = backward.update_parameters(params, grads, learning_rate)
 
@@ -63,4 +67,3 @@ def predict(X, Y, parameters):
     correct_predictions = np.sum(prediction_arg_max == label_arg_max)
     accuracy = correct_predictions / m
     return accuracy
-

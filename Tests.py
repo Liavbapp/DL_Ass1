@@ -16,7 +16,7 @@ class TestTrainModel(unittest.TestCase):
                       [0, 1, 0],
                       [1, 0, 0]])
         layers_dim = [5, 10, 16, 4]
-        lr = 1e-5
+        lr = 1e-3
         num_iter = 10000
         batch_size = 2
 
@@ -25,15 +25,22 @@ class TestTrainModel(unittest.TestCase):
 
     def test_L_layer_model_t2(self):
         X = np.random.rand(784, 48000)
+
         Y = np.zeros((10, 48000))
-        Y[4, :] = 1
+        Y[4, 1:100] = 1
+        Y[5, 100:5000] = 1
+        Y[6, 5000:20000] = 1
+        Y[7, 20000:40000] = 1
+        Y[8, 40000:48000] = 1
+
         layers_dim = [784, 20, 7, 5, 10]
         lr = 1e-5
         num_iter = 10000
-        batch_size = 2
+        batch_size = 256
 
         params, costs = model_trainer.L_layer_model(X, Y, layers_dim, lr, num_iter, batch_size)
         self.assertTrue(list(reversed(sorted(costs))) == costs)  # checking the costs are in descending order
+
 
 
     def test_predict(self):
@@ -537,3 +544,4 @@ def get_params():
                             -0.01379086, 0.00395963, -0.00182019, 0.01066898, 0.00241715,
                             0.00486742]),
             'b3': np.array([-0.00961275, -0.01421215, 0.00643539, 0.01738951])}
+

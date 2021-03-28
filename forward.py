@@ -34,13 +34,14 @@ def softmax(Z):
     :return A: the activations of the layer
     :return activation_cache: returns Z, which will be useful for the backpropagation
     """
+
     exp = np.exp(Z)
     A = exp / np.sum(exp, axis=0)[None, :]
     return A, {'Z': Z}
 
 
 def safe_softmax(Z):
-    Z_safe = Z - np.max(Z)
+    Z_safe = Z - Z.max(axis=0)
     return softmax(Z_safe)[0], {'Z': Z}
 
 
@@ -75,7 +76,7 @@ def linear_activation_forward(A_prev, W, B, activation):
     return A_cur, {**linear_cache, **activation_cache}
 
 
-def L_model_forward(X, parameters, use_batchnorm):  # Todo: add testing to check it
+def L_model_forward(X, parameters, use_batchnorm):
     """
     Implement forward propagation for the [LINEAR->RELU]*(L-1)->LINEAR->SOFTMAX computation
     :param X: the data, numpy array of shape (input size, number of examples)
@@ -124,6 +125,7 @@ def apply_batchnorm(A):
     :param A: the activation values of a given layer
     :return NA: the normalized activation values, based on the formula learned in class
     """
+    #TODO: returns nan when batch_norm is on
     epsilon = 0.000000001  # prevent divding by zero
     mu = np.average(A)
     variance = np.var(A)

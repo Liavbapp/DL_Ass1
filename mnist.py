@@ -38,14 +38,24 @@ def pre_process():
     return {'train_x': train_x.T, 'train_y': train_y.T, 'test_x': test_x.T, 'test_y': test_y.T,
             'validation_x': validation_x.T, 'validation_y': validation_y.T}
 
+def normalize_arr(arr):
+    avg = np.sum(arr, axis=0) / arr.shape[0]
+    std = np.std(arr, axis=0)
+    return (arr - avg) / std**2
+
+
+def normalize_data(data_dict):
+    data_dict.update({'train_x': normalize_arr(data_dict['train_x']),
+                      'test_x': normalize_arr(data_dict['test_x'])})
+    return data_dict
 
 def run_config():
     data_set = pre_process()
+    data_set = normalize_data(data_set) # helps to prevent nans at start of learning
     layers_dim = [784, 20, 7, 5, 10]
-    lr = 0.009
+    lr = 0.0009
     epochs = 10000
-    batch_size = 256
-
+    batch_size = 2048
     params, costs = model_trainer.L_layer_model(X=data_set['train_x'], Y=data_set['train_y'], layers_dims=layers_dim,
                                                 learning_rate=lr, num_iterations=epochs, batch_size=batch_size)
     print(costs)
