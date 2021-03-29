@@ -9,7 +9,7 @@ def initialize_parameters(layer_dims):
     # Special parameters initializations for ReLU layers (also worked good for us with softmax layer)
     params = {f'W{i + 1}': np.random.randn(layer_dims[i + 1], layer_dims[i]) * np.sqrt(2 / layer_dims[i]) for i in
               range(len(layer_dims) - 1)}
-    params.update({f'b{i + 1}': np.zeros(layer_dims[i + 1]) for i in range(len(layer_dims) - 1)})
+    params.update({f'b{i + 1}': np.zeros((layer_dims[i + 1], 1)) for i in range(len(layer_dims) - 1)})
 
     return params
 
@@ -23,9 +23,7 @@ def linear_forward(A, W, b):
     :return Z: the linear component of the activation function
     :return linear_cache: a dictionary containing A, W, b
     """
-    # A_t = np.expand_dims(A, axis=1)
-    b_t = np.expand_dims(b, axis=1)
-    Z = np.matmul(W, A) + b_t
+    Z = np.matmul(W, A) + b
     linear_cache = {'A_prev': A, 'W': W, 'b': b}
     return Z, linear_cache
 

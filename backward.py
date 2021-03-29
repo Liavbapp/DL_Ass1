@@ -10,15 +10,12 @@ def Linear_backward(dZ, cache):
     :return dW: Gradient of the cost with respect to W (current layer l), same shape as W
     :return db: Gradient of the cost with respect to b (current layer l), same shape as b
     """
-    A_prev = cache['A_prev']
-    A_prev_t = A_prev.transpose()
-    W = cache['W']
-    W_t = W.transpose()
     m = len(dZ[0])
 
-    dA_prev = np.matmul(W_t, dZ)  # TODO: not sure 100% about this
-    dW = (1 / m) * np.matmul(dZ, A_prev_t)
+    dA_prev = np.matmul(cache['W'].transpose(), dZ)
+    dW = (1 / m) * np.matmul(dZ, cache['A_prev'].transpose())
     db = (1 / m) * np.sum(dZ, axis=1)
+    db = db.reshape(-1, 1)
 
     return dA_prev, dW, db
 
