@@ -48,7 +48,6 @@ def pre_process():
 
 def run_config():
     data_set = pre_process()
-    # data_set = normalize_data(data_set)
     layers_dim = [784, 20, 7, 5, 10]
     lr = 0.009
     epochs = 100

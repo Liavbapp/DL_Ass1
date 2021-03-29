@@ -22,7 +22,8 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     """
     combined_data = np.concatenate([X, Y], axis=0)
     m = X.shape[1]
-    num_batches = 1 if m <= batch_size else int(m / batch_size)
+
+    num_batches = m // batch_size + (1 if m % batch_size else 0)
     batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1)
 
     params = forward.initialize_parameters(layers_dims)
@@ -30,6 +31,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     for epoch in range(0, num_iterations):
 
         # TODO: should we randomized that data and split to different batches each epoch?
+        # TODO: Naor said: "I think it should, didnt understood the use of shuffle"
         # np.random.shuffle(np.transpose(combined_data))
         # batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1)
 
@@ -41,7 +43,8 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
         for batch in batches:
             X_batch = batch[0:X.shape[0], :]
             Y_batch = batch[X.shape[0]:, :]
-            prediction, caches = forward.L_model_forward(X_batch, params, use_batchnorm=False) #TODO: when batch norm is True we get nan values while learning
+            prediction, caches = forward.L_model_forward(X_batch, params,
+                                                         use_batchnorm=True)
             grads = backward.L_model_backward(prediction, Y_batch, caches)
             params = backward.update_parameters(params, grads, learning_rate)
 
@@ -61,9 +64,9 @@ def predict(X, Y, parameters):
                      label receives the hugest confidence score).
                      Using the softmax function to normalize the output values
     """
-    # TODO: check what "use softmax function to normalize output values" means
     m = X.shape[1]
-    prediction, caches = forward.L_model_forward(X, parameters, use_batchnorm=False) #TODO: see the above comment about batch norm
+    prediction, caches = forward.L_model_forward(X, parameters,
+                                                 use_batchnorm=True)
     prediction_arg_max = np.argmax(prediction, axis=0)
     label_arg_max = np.argmax(Y, axis=0)
     correct_predictions = np.sum(prediction_arg_max == label_arg_max)
