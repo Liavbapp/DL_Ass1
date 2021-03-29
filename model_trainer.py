@@ -44,7 +44,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
             X_batch = batch[0:X.shape[0], :]
             Y_batch = batch[X.shape[0]:, :]
             prediction, caches = forward.L_model_forward(X_batch, params,
-                                                         use_batchnorm=True)
+                                                         use_batchnorm=False)
             grads = backward.L_model_backward(prediction, Y_batch, caches)
             params = backward.update_parameters(params, grads, learning_rate)
 
@@ -66,7 +66,7 @@ def predict(X, Y, parameters):
     """
     m = X.shape[1]
     prediction, caches = forward.L_model_forward(X, parameters,
-                                                 use_batchnorm=True)
+                                                 use_batchnorm=False)
     prediction_arg_max = np.argmax(prediction, axis=0)
     label_arg_max = np.argmax(Y, axis=0)
     correct_predictions = np.sum(prediction_arg_max == label_arg_max)

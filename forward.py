@@ -55,7 +55,7 @@ def relu(Z):
     """
 
     def relu_func(zi):
-        return np.max([0., zi])
+        return np.maximum(0., zi)
 
     relu_func = np.vectorize(relu_func)
     A = relu_func(Z)
@@ -114,7 +114,7 @@ def compute_cost(AL, Y):
     :return cost: the cross-entropy cost
     """
     m = len(AL[0])
-    cost = (-1 / m) * sum(np.matmul(Y[:, i], np.log(AL[:, i])) for i in range(0, m)) #TODO: can be vectorized ?
+    cost = (-1 / m) * sum(np.matmul(Y[:, i], np.log(AL[:, i])) for i in range(0, m))  # TODO: can be vectorized ?
     return cost
 
 
