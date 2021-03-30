@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
 
-# def load_data():
 import model_trainer
+from time import time
 
 
 def expand_y(y_data, num_classes=10):
@@ -50,13 +50,17 @@ def run_config():
     data_set = pre_process()
     layers_dim = [784, 20, 7, 5, 10]
     lr = 0.009
-    epochs = 100
+    iter_to_cost = 100
     batch_size = 1024
     params, costs = model_trainer.L_layer_model(X=data_set['train_x'], Y=data_set['train_y'], layers_dims=layers_dim,
-                                                learning_rate=lr, num_iterations=epochs, batch_size=batch_size)
+                                                learning_rate=lr, num_iterations=iter_to_cost, batch_size=batch_size)
     print('\naccuracy: ' + str(model_trainer.predict(X=data_set['test_x'], Y=data_set['test_y'], parameters=params)))
     # print(costs)
 
 
 if __name__ == '__main__':
+    np.random.seed(42)
+    start = time()
     run_config()
+    end = time()
+    print(f'Time: {end-start}')

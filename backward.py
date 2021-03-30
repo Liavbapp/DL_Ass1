@@ -64,7 +64,7 @@ def softmax_backward(dA, activation_cache):
     # Gilad said on forum that it is ok to assume we get here A_L (soft_max results) and True_labels
     a_L = activation_cache['AL']  # our's softmax (last layer) probabilities
     t_L = activation_cache['TL']  # True labels
-    dZ = a_L - t_L  # TODO: its the computation as in lecture, but why we get dA as input?
+    dZ = a_L - t_L
     return dZ
 
 
@@ -83,11 +83,11 @@ def L_model_backward(AL, Y, caches):
     num_layers = len(caches)
     grads = {}
     caches[num_layers - 1]['TL'] = Y  # ground True labels. adding as part of the cache
-    caches[num_layers - 1]['AL'] = AL # Last layer activation labels (softmax results). adding it as part of the cache
+    caches[num_layers - 1]['AL'] = AL  # Last layer activation labels (softmax results). adding it as part of the cache
     dA_prev = None
     for layer_i in range(num_layers, 0, -1):
         activation = 'softmax' if layer_i == num_layers else 'relu'
-        dA = dA_prev if layer_i < num_layers else -(Y / AL) + (1 - Y) / (1 - AL)
+        dA = dA_prev if activation == 'relu' else -(Y / AL) + (1 - Y) / (1 - AL)
         dA_prev, dW, db = linear_activation_backward(dA, caches[layer_i - 1], activation)
         grads.update({f'dA{layer_i}': dA, f'dW{layer_i}': dW, f'db{layer_i}': db})
 
@@ -102,7 +102,7 @@ def update_parameters(parameters, grads, learning_rate):
     :param learning_rate: the learning rate used to update the parameters (the “alpha”)
     :return parameters: the updated values of the parameters object provided as input
     """
-    n_layers = int(len(parameters) / 2)
+    n_layers = len(parameters) // 2
     for i in range(1, n_layers + 1):
         parameters[f'W{i}'] -= learning_rate * grads[f'dW{i}']
         parameters[f'b{i}'] -= learning_rate * grads[f'db{i}']

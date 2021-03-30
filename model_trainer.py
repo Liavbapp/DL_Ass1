@@ -2,6 +2,8 @@ import backward
 import forward
 import numpy as np
 
+BATCHNORM_USAGE = False
+
 
 def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     """
@@ -20,33 +22,40 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
                     One value is to be saved after each 100 training iterations (e.g. 3000 iterations -> 30 values).
 
     """
+    stop_rate = 0.001
+
     combined_data = np.concatenate([X, Y], axis=0)
     m = X.shape[1]
 
     num_batches = m // batch_size + (1 if m % batch_size else 0)
-    batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1)
 
     params = forward.initialize_parameters(layers_dims)
     costs = []
-    for epoch in range(0, num_iterations):
 
-        # TODO: should we randomized that data and split to different batches each epoch?
-        # TODO: Naor said: "I think it should, didnt understood the use of shuffle"
-        # np.random.shuffle(np.transpose(combined_data))
-        # batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1)
+    episode_num = 0
+    steps_cnt = 0
+    while len(costs) < 2 or costs[-2] - costs[-1] > stop_rate:
+        if not steps_cnt % num_batches:
+            episode_num += 1
+            print(f'Epoch number {episode_num}')
 
-        if epoch % 1 == 0 and epoch > 0:
-            print(epoch)
+            np.random.shuffle(combined_data.T)
+            batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1)
+
+        X_batch = batches[steps_cnt % num_batches][0:X.shape[0], :]
+        Y_batch = batches[steps_cnt % num_batches][X.shape[0]:, :]
+
+        prediction, caches = forward.L_model_forward(X_batch, params,
+                                                     use_batchnorm=BATCHNORM_USAGE)
+        grads = backward.L_model_backward(prediction, Y_batch, caches)
+        params = backward.update_parameters(params, grads, learning_rate)
+
+        steps_cnt += 1
+
+        if not steps_cnt % num_iterations:
             cost = forward.compute_cost(prediction, Y_batch)
             costs.append(cost)
-            print(cost)
-        for batch in batches:
-            X_batch = batch[0:X.shape[0], :]
-            Y_batch = batch[X.shape[0]:, :]
-            prediction, caches = forward.L_model_forward(X_batch, params,
-                                                         use_batchnorm=True)
-            grads = backward.L_model_backward(prediction, Y_batch, caches)
-            params = backward.update_parameters(params, grads, learning_rate)
+            print(f'\tStep number: {steps_cnt} - Cost {cost:.3f}')
 
     return params, costs
 
@@ -66,7 +75,7 @@ def predict(X, Y, parameters):
     """
     m = X.shape[1]
     prediction, caches = forward.L_model_forward(X, parameters,
-                                                 use_batchnorm=True)
+                                                 use_batchnorm=BATCHNORM_USAGE)
     prediction_arg_max = np.argmax(prediction, axis=0)
     label_arg_max = np.argmax(Y, axis=0)
     correct_predictions = np.sum(prediction_arg_max == label_arg_max)

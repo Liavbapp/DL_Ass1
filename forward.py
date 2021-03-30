@@ -112,7 +112,7 @@ def compute_cost(AL, Y):
     :return cost: the cross-entropy cost
     """
     m = len(AL[0])
-    cost = (-1 / m) * sum(np.matmul(Y[:, i], np.log(AL[:, i])) for i in range(0, m))  # TODO: can be vectorized ?
+    cost = (-1 / m) * (Y * np.log(AL)).sum()
     return cost
 
 

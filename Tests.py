@@ -100,7 +100,6 @@ class TestBackward(unittest.TestCase):
                   {'W': W_4, 'b': b_4, 'Z': Z_4, 'A_prev': A_3}]
         grads = backward.L_model_backward(AL, Y, caches)
         return grads
-        # TODO: think what should check here
 
     def test_linear_activation_backward_t1(self):
         dA = np.random.rand(4, 3)
