@@ -12,16 +12,6 @@ def expand_y(y_data, num_classes=10):
     return expanded_y
 
 
-def generate_validation_data(data_x, data_y, validation_factor=0.2):
-    combined_data = np.concatenate([data_x, data_y], axis=1)
-    np.random.shuffle(combined_data)
-    num_rows = int(validation_factor * combined_data.shape[0])
-    validation, train = combined_data[:num_rows, :], combined_data[num_rows:, :]
-    train_x, train_y = train[:, :-1], train[:, -1:]
-    validation_x, validation_y = validation[:, :-1], validation[:, -1:]
-    return train_x, train_y, validation_x, validation_y
-
-
 def reshape_data(data):
     data_x, data_y = data
     data_x = data_x.reshape(data_x.shape[0], data_x.shape[1] * data_x.shape[2])
@@ -39,11 +29,9 @@ def pre_process():
     train_x, train_y = reshape_data(train_data)
     test_x, test_y = reshape_data(test_data)
     train_x, test_x = normalize(train_x), normalize(test_x)
-    train_x, train_y, validation_x, validation_y = generate_validation_data(train_x, train_y)
-    train_y, test_y, validation_y = expand_y(train_y), expand_y(test_y), expand_y(validation_y)
+    train_y, test_y= expand_y(train_y), expand_y(test_y)
 
-    return {'train_x': train_x.T, 'train_y': train_y.T, 'test_x': test_x.T, 'test_y': test_y.T,
-            'validation_x': validation_x.T, 'validation_y': validation_y.T}
+    return {'train_x': train_x.T, 'train_y': train_y.T, 'test_x': test_x.T, 'test_y': test_y.T}
 
 
 def run_config():
@@ -54,8 +42,8 @@ def run_config():
     batch_size = 1024
     params, costs = model_trainer.L_layer_model(X=data_set['train_x'], Y=data_set['train_y'], layers_dims=layers_dim,
                                                 learning_rate=lr, num_iterations=iter_to_cost, batch_size=batch_size)
-    print('\naccuracy: ' + str(model_trainer.predict(X=data_set['test_x'], Y=data_set['test_y'], parameters=params)))
-    # print(costs)
+    print(f"Test Accuracy: "
+          f"{model_trainer.predict(X=data_set['test_x'], Y=data_set['test_y'], parameters=params) * 100:.2f}%")
 
 
 if __name__ == '__main__':
@@ -63,4 +51,4 @@ if __name__ == '__main__':
     start = time()
     run_config()
     end = time()
-    print(f'Time: {end-start}')
+    print(f'\nTime: {end-start}')

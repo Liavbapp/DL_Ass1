@@ -5,6 +5,17 @@ import numpy as np
 BATCHNORM_USAGE = False
 
 
+def generate_validation_data(data_x, data_y, validation_factor=0.2):
+    y_size = data_y.shape[0]
+    combined_data = np.concatenate([data_x.T, data_y.T], axis=1)
+    np.random.shuffle(combined_data)
+    num_rows = int(validation_factor * combined_data.shape[0])
+    validation, train = combined_data[:num_rows, :], combined_data[num_rows:, :]
+    train_x, train_y = train[:, :-y_size], train[:, -y_size:]
+    validation_x, validation_y = validation[:, :-y_size], validation[:, -y_size:]
+    return train_x.T, train_y.T, validation_x.T, validation_y.T
+
+
 def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     """
     Implements a L-layer neural network.
@@ -24,8 +35,11 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     """
     stop_rate = 0.001
 
-    combined_data = np.concatenate([X, Y], axis=0)
-    m = X.shape[1]
+    train_x, train_y, validation_x, validation_y = generate_validation_data(X, Y)
+    del X, Y
+
+    combined_data = np.concatenate([train_x, train_y], axis=0)
+    m = train_x.shape[1]
 
     num_batches = m // batch_size + (1 if m % batch_size else 0)
 
@@ -42,8 +56,8 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
             np.random.shuffle(combined_data.T)
             batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1)
 
-        X_batch = batches[steps_cnt % num_batches][0:X.shape[0], :]
-        Y_batch = batches[steps_cnt % num_batches][X.shape[0]:, :]
+        X_batch = batches[steps_cnt % num_batches][0:train_x.shape[0], :]
+        Y_batch = batches[steps_cnt % num_batches][train_x.shape[0]:, :]
 
         prediction, caches = forward.L_model_forward(X_batch, params,
                                                      use_batchnorm=BATCHNORM_USAGE)
@@ -53,9 +67,14 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
         steps_cnt += 1
 
         if not steps_cnt % num_iterations:
-            cost = forward.compute_cost(prediction, Y_batch)
+            prediction, _ = forward.L_model_forward(validation_x, params,
+                                                    use_batchnorm=BATCHNORM_USAGE)
+            cost = forward.compute_cost(prediction, validation_y)
             costs.append(cost)
             print(f'\tStep number: {steps_cnt} - Cost {cost:.3f}')
+
+    print(f"\nTrain Accuracy: {predict(X=train_x, Y=train_y, parameters=params)*100:.2f}%")
+    print(f"Validation Accuracy: {predict(X=validation_x, Y=validation_y, parameters=params) * 100:.2f}%")
 
     return params, costs
 
