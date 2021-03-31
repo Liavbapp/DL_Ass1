@@ -39,16 +39,16 @@ def run_config():
     layers_dim = [784, 20, 7, 5, 10]
     lr = 0.009
     iter_to_cost = 100
-    batch_size = 1024
+    batch_size = 256
+    start = time()
     params, costs = model_trainer.L_layer_model(X=data_set['train_x'], Y=data_set['train_y'], layers_dims=layers_dim,
                                                 learning_rate=lr, num_iterations=iter_to_cost, batch_size=batch_size)
+    end = time()
     print(f"Test Accuracy: "
           f"{model_trainer.predict(X=data_set['test_x'], Y=data_set['test_y'], parameters=params) * 100:.2f}%")
+    print(f'\nRunning Time: {end - start:.2f}s')
 
 
 if __name__ == '__main__':
     np.random.seed(42)
-    start = time()
     run_config()
-    end = time()
-    print(f'\nTime: {end-start}')

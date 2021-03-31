@@ -2,6 +2,9 @@ import backward
 import forward
 import numpy as np
 
+import matplotlib.pyplot as plt
+import pandas as pd
+
 BATCHNORM_USAGE = False
 
 
@@ -46,13 +49,9 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     params = forward.initialize_parameters(layers_dims)
     costs = []
 
-    episode_num = 0
     steps_cnt = 0
-    while len(costs) < 2 or costs[-2] - costs[-1] > stop_rate:
+    while len(costs) < 2 or np.abs(costs[-2] - costs[-1]) > stop_rate:
         if not steps_cnt % num_batches:
-            episode_num += 1
-            print(f'Epoch number {episode_num}')
-
             np.random.shuffle(combined_data.T)
             batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1)
 
@@ -73,8 +72,18 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
             costs.append(cost)
             print(f'\tStep number: {steps_cnt} - Cost {cost:.3f}')
 
-    print(f"\nTrain Accuracy: {predict(X=train_x, Y=train_y, parameters=params)*100:.2f}%")
+    steps_str = '' if not steps_cnt % num_batches else f' and {steps_cnt % num_batches} steps'
+    print(f'\nRan over {steps_cnt // num_batches} epochs' + steps_str)
+
+    print(f"\nTrain Accuracy: {predict(X=train_x, Y=train_y, parameters=params) * 100:.2f}%")
     print(f"Validation Accuracy: {predict(X=validation_x, Y=validation_y, parameters=params) * 100:.2f}%")
+
+    plt.plot(list(range(100, len(costs) * 100 + 1, 100)), costs, 'b', label='validation cost')
+    plt.title('Validation costs')
+    plt.xlabel('Steps')
+    plt.ylabel('Cost')
+    plt.legend()
+    plt.show()
 
     return params, costs
 
