@@ -1,7 +1,7 @@
 import numpy as np
 
 DROPOUT_USAGE = True
-DROPOUT_KEEP_PROB = 0.8
+DROPOUT_KEEP_PROB = 0.5
 
 
 def initialize_parameters(layer_dims):
@@ -99,21 +99,18 @@ def L_model_forward(X, parameters, use_batchnorm):
         b_i = parameters[f'b{layer_i}']
         activation_function = activations[layer_i-1]
 
+        A_i, lin_cache_i = linear_activation_forward(A_prev, W_i, b_i, activation_function)
+        caches.append(lin_cache_i)
+
+        A_i = apply_batchnorm(A_i) if use_batchnorm and activation_function != 'softmax' else A_i
+
+
         # Dropout
         if DROPOUT_USAGE and activation_function != 'softmax':
             mask = np.random.uniform(size=(b_i.shape[0], 1))
             bool_mask = mask < DROPOUT_KEEP_PROB
             mask[bool_mask] = 1. / DROPOUT_KEEP_PROB
             mask[~bool_mask] = 0
-            b_i = b_i * mask
-
-        A_i, lin_cache_i = linear_activation_forward(A_prev, W_i, b_i, activation_function)
-        caches.append(lin_cache_i)
-
-        A_i = apply_batchnorm(A_i) if use_batchnorm and activation_function != 'softmax' else A_i
-
-        # Dropout
-        if DROPOUT_USAGE and activation_function != 'softmax':
             A_i = A_i * mask
 
         A_prev = A_i

@@ -5,7 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-BATCHNORM_USAGE = False
+BATCHNORM_USAGE = True
+DROPOUT_USAGE = True
 
 
 def generate_validation_data(data_x, data_y, validation_factor=0.2):
@@ -36,7 +37,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
                     One value is to be saved after each 100 training iterations (e.g. 3000 iterations -> 30 values).
 
     """
-    stop_rate = 0.001
+    stop_rate = 0.0001
 
     train_x, train_y, validation_x, validation_y = generate_validation_data(X, Y)
     del X, Y
@@ -66,12 +67,18 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
         steps_cnt += 1
 
         if not steps_cnt % num_iterations:
+            if DROPOUT_USAGE:
+                forward.DROPOUT_USAGE = False
             prediction, _ = forward.L_model_forward(validation_x, params,
                                                     use_batchnorm=BATCHNORM_USAGE)
             cost = forward.compute_cost(prediction, validation_y)
             costs.append(cost)
             print(f'\tStep number: {steps_cnt} - Cost {cost:.3f}')
+            if DROPOUT_USAGE:
+                forward.DROPOUT_USAGE = True
 
+    if DROPOUT_USAGE:
+        forward.DROPOUT_USAGE = False
     steps_str = '' if not steps_cnt % num_batches else f' and {steps_cnt % num_batches} steps'
     print(f'\nRan over {steps_cnt // num_batches} epochs' + steps_str)
 
