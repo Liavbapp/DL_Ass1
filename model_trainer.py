@@ -2,10 +2,17 @@ import backward
 import forward
 import numpy as np
 
-BATCHNORM_USAGE = False
+BATCHNORM_USAGE = True
 
 
 def generate_validation_data(data_x, data_y, validation_factor=0.2):
+    """
+    splitting the data to train and validation data by the validation_factor
+    :param data_x: the x data to train
+    :param data_y: the y data to train
+    :param validation_factor: the percentage of the train data to be part of the validation data
+    :return: a tuple of train_x, train_y, validation_x, validation_y
+    """
     y_size = data_y.shape[0]
     combined_data = np.concatenate([data_x.T, data_y.T], axis=1)
     np.random.shuffle(combined_data)
@@ -46,13 +53,9 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
     params = forward.initialize_parameters(layers_dims)
     costs = []
 
-    episode_num = 0
     steps_cnt = 0
-    while len(costs) < 2 or costs[-2] - costs[-1] > stop_rate:
+    while len(costs) < 2 or np.abs(costs[-2] - costs[-1]) > stop_rate:
         if not steps_cnt % num_batches:
-            episode_num += 1
-            print(f'Epoch number {episode_num}')
-
             np.random.shuffle(combined_data.T)
             batches = np.array_split(combined_data, indices_or_sections=num_batches, axis=1)
 
@@ -72,6 +75,9 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations, batch_size):
             cost = forward.compute_cost(prediction, validation_y)
             costs.append(cost)
             print(f'\tStep number: {steps_cnt} - Cost {cost:.3f}')
+
+    steps_str = '' if not steps_cnt % num_batches else f' and {steps_cnt % num_batches} steps'
+    print(f'\nRan over {steps_cnt // num_batches} epochs' + steps_str)
 
     print(f"\nTrain Accuracy: {predict(X=train_x, Y=train_y, parameters=params)*100:.2f}%")
     print(f"Validation Accuracy: {predict(X=validation_x, Y=validation_y, parameters=params) * 100:.2f}%")
